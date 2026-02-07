@@ -38,7 +38,6 @@ http://localhost:8000/api
 ✅ **Admin Features**
 - Django admin interface for monitoring
 - View all donations across platform
-- User account management
 - Filtered donation reports
 
 ✅ **Security**
@@ -94,15 +93,13 @@ http://localhost:8000/api
 ### Donations
 | Method | Endpoint | Purpose | Auth |
 |--------|----------|---------|------|
-| POST | `/donations/pay/` | Submit a donation | ❌ |
+| POST | `/donations/donate/` | Submit a donation | ❌ |
 | GET | `/donations/stats/` | View total funds raised | ❌ |
 
-### Admin & Docs
+### Admin
 | Endpoint | Purpose |
 |----------|---------|
 | `/admin/` | Django admin interface (staff only) |
-| `/schema/swagger-ui/` | Interactive API documentation |
-| `/schema/redoc/` | Alternative API documentation |
 
 ---
 
@@ -121,7 +118,6 @@ timestamp                   TIMESTAMP       AUTO_NOW_ADD, Indexed
 
 ### Indexes (Performance)
 ```
-donations(donor_id, -timestamp)
 donations(transaction_reference)
 donations(timestamp)
 ```
@@ -135,7 +131,6 @@ donations(timestamp)
 Django 4.2+                          # Web framework
 Django REST Framework 3.14+          # REST API
 django-cors-headers 4.0+             # CORS support
-drf-spectacular 0.26+                # OpenAPI/Swagger docs
 psycopg2-binary 2.9+                 # PostgreSQL driver
 python-decouple 3.8                  # Environment variables
 ```
@@ -185,7 +180,7 @@ Nginx                                # Reverse proxy
 
 ### Submit Donation
 ```bash
-POST /api/donations/pay/
+POST /api/donations/donate/
 Content-Type: application/json
 
 {
@@ -245,10 +240,9 @@ Response (200 OK):
 - Django admin for monitoring
 
 ### Week 4: Testing & Deployment
-**Deliverable:** Submission-ready API with full documentation
+**Deliverable:** Submission-ready API
 - Comprehensive unit tests
 - Integration tests
-- API documentation (Swagger)
 - Security hardening
 - Deployment guide
 
@@ -293,9 +287,6 @@ python manage.py runserver
 
 # 8. Run tests
 pytest
-
-# 9. View API documentation
-# Navigate to http://localhost:8000/api/schema/swagger-ui/
 ```
 
 ---
@@ -305,25 +296,13 @@ pytest
 ```
 upendo-charity/
 │
-├── 📋 Design Documents (Created)
-│   ├── DESIGN_DOCUMENTATION.md      # Complete specification
-│   ├── API_QUICK_REFERENCE.md       # Quick lookup guide
-│   ├── PROJECT_STRUCTURE.md         # File organization
-│   ├── TESTING_STRATEGY.md          # Test planning
-│   ├── SECURITY_DEPLOYMENT.md       # Security & ops
-│   ├── DESIGN_SUMMARY.md            # Overview & index
-│   └── README.md                    # This file
+├── 📄 README.md                     # This file
+├── 📄 requirements.txt              # Dependencies
 │
 ├── 📁 upendo_project/               # Django settings (To be created)
 │   ├── settings.py
 │   ├── urls.py
 │   └── wsgi.py
-│
-├── 📁 accounts/                     # User management (To be created)
-│   ├── models.py
-│   ├── serializers.py
-│   ├── views.py
-│   └── urls.py
 │
 ├── 📁 donations/                    # Donation management (To be created)
 │   ├── models.py
@@ -339,13 +318,10 @@ upendo-charity/
 │   └── pagination.py
 │
 ├── 📁 tests/                        # Test suite (To be created)
-│   ├── test_auth.py
 │   ├── test_donations.py
-│   ├── test_permissions.py
 │   └── conftest.py
 │
 ├── 📄 manage.py                     # Django CLI
-├── 📄 requirements.txt              # Dependencies
 ├── 📄 .env.example                  # Environment template
 └── 📄 .gitignore                    # Git ignore rules
 ```
