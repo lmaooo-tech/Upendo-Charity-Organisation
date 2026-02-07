@@ -349,3 +349,4 @@ upendo-charity/
 ├── 📄 .env.example                  # Environment template
 └── 📄 .gitignore                    # Git ignore rules
 ```
+All the  Best.
