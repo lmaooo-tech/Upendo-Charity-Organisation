@@ -52,7 +52,7 @@ http://localhost:8000/api
 ```
 ┌─────────────────────────────────────────────┐
 │         Client Layer (Frontend)              │
-│    (React/Vue/Mobile Apps)                   │
+│    (HTML + Tailwind CSS)                     │
 └──────────────┬──────────────────────────────┘
                │ HTTP/REST/JSON
 ┌──────────────▼──────────────────────────────┐
@@ -133,6 +133,12 @@ Django REST Framework 3.14+          # REST API
 django-cors-headers 4.0+             # CORS support
 psycopg2-binary 2.9+                 # PostgreSQL driver
 python-decouple 3.8                  # Environment variables
+```
+
+### Frontend
+```
+HTML5                                # Static frontend markup
+Tailwind CSS                         # Utility-first styling
 ```
 
 ### Database
