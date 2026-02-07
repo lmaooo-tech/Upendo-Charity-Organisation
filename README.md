@@ -2,11 +2,11 @@
 
 ## Project Overview
 
-A streamlined backend system designed to manage direct financial contributions to the Upendo organization. The system provides RESTful API endpoints for donors to register, submit secure donations, and track their personal contribution history. It also features a public-facing statistics endpoint to promote organizational transparency by displaying total funds raised.
+A streamlined backend system designed to manage direct financial contributions to the Upendo organization. The system provides RESTful API endpoints for donors to submit donations and view public fundraising statistics. No signup or login is required.
 
 **Project Type:** Django REST API  
 **Capstone Project:** Upendo Charity Organization  
-**Status:** 🎯 Ready for Implementation (Design Phase Complete)  
+**Status:** 🎯 Ready for Implementation  
 **Target Duration:** 4 weeks
 
 ---
@@ -18,28 +18,17 @@ A streamlined backend system designed to manage direct financial contributions t
 http://localhost:8000/api
 ```
 
-### 📚 Documentation Files (Design Phase)
+### 📚 Project Files
 
-| Document | Purpose | Link |
-|----------|---------|------|
-| **DESIGN_SUMMARY.md** | Start here - Overview of all design | Index & key decisions |
-| **DESIGN_DOCUMENTATION.md** | Comprehensive specification | Database, endpoints, validation |
-| **API_QUICK_REFERENCE.md** | Quick API lookup | Endpoints, examples, errors |
-| **PROJECT_STRUCTURE.md** | Directory organization | File layout & responsibilities |
-| **TESTING_STRATEGY.md** | Test planning | Test types, fixtures, coverage |
-| **SECURITY_DEPLOYMENT.md** | Security & operations | Security checklist, deployment |
+- README.md
+- requirements.txt
 
 ### ✨ Key Features
-
-✅ **User Authentication**
-- Register with secure password requirements
-- Login with JWT tokens (access + refresh)
-- Stateless authentication for scalability
 
 ✅ **Donation Management**
 - Submit donations with validation
 - Auto-generated unique transaction references
-- View personal donation history
+- Optional donor name and email per donation
 
 ✅ **Transparency**
 - Public endpoint showing total funds raised
@@ -53,9 +42,6 @@ http://localhost:8000/api
 - Filtered donation reports
 
 ✅ **Security**
-- Password validation (8+ chars, mixed case, numbers, symbols)
-- JWT token-based authentication
-- Role-based permissions (user, admin)
 - Input validation on all endpoints
 - HTTPS-ready configuration
 
@@ -73,16 +59,14 @@ http://localhost:8000/api
 ┌──────────────▼──────────────────────────────┐
 │          API Layer (Django)                  │
 │  ┌────────────────────────────────────────┐ │
-│  │ URL Router (/api/auth/*, /api/donations/*) │
-│  │ JWT Middleware (Token Validation)      │ │
-│  │ Permissions (IsAuth, IsPublic)         │ │
+│  │ URL Router (/api/donations/*)          │ │
 │  └────────────────────────────────────────┘ │
 └──────────────┬──────────────────────────────┘
                │
 ┌──────────────▼──────────────────────────────┐
 │    Business Logic Layer (DRF)               │
 │  ┌────────────────────────────────────────┐ │
-│  │ Views (Auth, Donations, Stats)         │ │
+│  │ Views (Donations, Stats)               │ │
 │  │ Serializers (Validation, Transform)    │ │
 │  │ Managers (Complex Queries)             │ │
 │  └────────────────────────────────────────┘ │
@@ -91,15 +75,12 @@ http://localhost:8000/api
 ┌──────────────▼──────────────────────────────┐
 │        Data Layer (Models)                   │
 │  ┌────────────────────────────────────────┐ │
-│  │ User (Custom AbstractUser)             │ │
 │  │ Donation (with auto-ref generation)    │ │
-│  │ Signals (auto-generation)              │ │
 │  └────────────────────────────────────────┘ │
 └──────────────┬──────────────────────────────┘
                │
 ┌──────────────▼──────────────────────────────┐
 │      Database Layer (PostgreSQL)             │
-│  users_customuser (Donors)                  │
 │  donations_donation (Transactions)          │
 │  Django admin interface                     │
 │  Backup & Recovery system                   │
@@ -110,18 +91,10 @@ http://localhost:8000/api
 
 ## API Endpoints at a Glance
 
-### Authentication
-| Method | Endpoint | Purpose | Auth |
-|--------|----------|---------|------|
-| POST | `/auth/register/` | Create new donor account | ❌ |
-| POST | `/auth/login/` | Generate access & refresh tokens | ❌ |
-| POST | `/auth/token/refresh/` | Get new access token | ❌ |
-
 ### Donations
 | Method | Endpoint | Purpose | Auth |
 |--------|----------|---------|------|
-| POST | `/donations/pay/` | Submit a donation | ✅ |
-| GET | `/donations/my-history/` | View your donations | ✅ |
+| POST | `/donations/pay/` | Submit a donation | ❌ |
 | GET | `/donations/stats/` | View total funds raised | ❌ |
 
 ### Admin & Docs
@@ -135,23 +108,11 @@ http://localhost:8000/api
 
 ## Database Design
 
-### User Model (Custom User)
-```
-id                INT             PRIMARY KEY
-username          VARCHAR(150)    UNIQUE
-email             VARCHAR(254)    UNIQUE, Indexed
-password          VARCHAR(128)    Hashed
-full_name         VARCHAR(100)    
-is_staff          BOOLEAN         DEFAULT: False
-is_active         BOOLEAN         DEFAULT: True
-date_joined       TIMESTAMP       AUTO_NOW_ADD
-last_login        TIMESTAMP       NULLABLE
-```
-
 ### Donation Model
 ```
 id                          INT             PRIMARY KEY
-donor_id                    INT             FK → User (CASCADE)
+donor_name                  VARCHAR(100)    OPTIONAL
+donor_email                 VARCHAR(254)    OPTIONAL
 amount                      DECIMAL(10,2)   Range: 0.01 - 999,999.99
 transaction_reference       VARCHAR(50)     UNIQUE, Indexed
 message                     TEXT            OPTIONAL, Max: 500 chars
@@ -163,8 +124,6 @@ timestamp                   TIMESTAMP       AUTO_NOW_ADD, Indexed
 donations(donor_id, -timestamp)
 donations(transaction_reference)
 donations(timestamp)
-users(email)
-users(username)
 ```
 
 ---
@@ -175,7 +134,6 @@ users(username)
 ```
 Django 4.2+                          # Web framework
 Django REST Framework 3.14+          # REST API
-djangorestframework-simplejwt 5.2+   # JWT authentication
 django-cors-headers 4.0+             # CORS support
 drf-spectacular 0.26+                # OpenAPI/Swagger docs
 psycopg2-binary 2.9+                 # PostgreSQL driver
@@ -206,21 +164,12 @@ Nginx                                # Reverse proxy
 
 ## Security Features
 
-### Authentication Security
-✅ Password validation: 8+ chars, uppercase, lowercase, number, special char  
-✅ Passwords hashed with PBKDF2 (bcrypt alternative compatible)  
-✅ JWT tokens with 5-min access and 24-hour refresh lifetimes  
-✅ Token payload signed and verified (HS256 algorithm)  
-
 ### Data Protection
 ✅ SQL injection prevention via Django ORM  
-✅ Foreign key constraints enforce referential integrity  
-✅ Cascading deletes respect data ownership  
 ✅ DECIMAL fields prevent floating-point errors  
 
 ### API Security
 ✅ CORS configuration (whitelist allowed origins)  
-✅ Rate limiting on auth endpoints  
 ✅ Input validation at serializer level  
 ✅ No sensitive data in error messages  
 
@@ -234,64 +183,23 @@ Nginx                                # Reverse proxy
 
 ## Request/Response Examples
 
-### Register
-```bash
-POST /api/auth/register/
-Content-Type: application/json
-
-{
-  "username": "john_doe",
-  "email": "john@example.com",
-  "password": "SecurePass123!",
-  "full_name": "John Doe"
-}
-
-Response (201 Created):
-{
-  "id": 1,
-  "username": "john_doe",
-  "email": "john@example.com",
-  "full_name": "John Doe"
-}
-```
-
-### Login
-```bash
-POST /api/auth/login/
-Content-Type: application/json
-
-{
-  "email": "john@example.com",
-  "password": "SecurePass123!"
-}
-
-Response (200 OK):
-{
-  "access": "eyJ0eXAiOiJKV1QiLCJhbGc...",
-  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGc...",
-  "user": {
-    "id": 1,
-    "username": "john_doe",
-    "email": "john@example.com"
-  }
-}
-```
-
 ### Submit Donation
 ```bash
 POST /api/donations/pay/
-Authorization: Bearer {access_token}
 Content-Type: application/json
 
 {
   "amount": "150.50",
+  "donor_name": "John Doe",
+  "donor_email": "john@example.com",
   "message": "Supporting education programs"
 }
 
 Response (201 Created):
 {
   "id": 1,
-  "donor": 1,
+  "donor_name": "John Doe",
+  "donor_email": "john@example.com",
   "amount": "150.50",
   "transaction_reference": "TXN-20260207-ABC123",
   "message": "Supporting education programs",
@@ -316,12 +224,12 @@ Response (200 OK):
 
 ## Project Timeline
 
-### Week 1: Foundation & Authentication
-**Deliverable:** Working authentication system
+### Week 1: Foundation
+**Deliverable:** Working donation submission + stats
 - Django project setup
-- Custom User model
-- JWT authentication endpoints
-- Database migrations
+- Donation model
+- Donation submission endpoint
+- Stats endpoint
 
 ### Week 2: Core Donation Logic
 **Deliverable:** Ability to save donations with unique references
@@ -330,12 +238,11 @@ Response (200 OK):
 - POST endpoint for donations
 - Amount validation
 
-### Week 3: Reporting & History
-**Deliverable:** Donor tracking and public statistics
-- Donation history endpoint with filtering
+### Week 3: Reporting
+**Deliverable:** Public statistics and admin monitoring
 - Stats aggregation and public endpoint
-- Pagination on history
 - Optional caching on stats
+- Django admin for monitoring
 
 ### Week 4: Testing & Deployment
 **Deliverable:** Submission-ready API with full documentation
@@ -442,227 +349,3 @@ upendo-charity/
 ├── 📄 .env.example                  # Environment template
 └── 📄 .gitignore                    # Git ignore rules
 ```
-
----
-
-## Key Design Decisions
-
-### 1. Custom User Model
-**Why:** Flexibility for future extensions (donor profiles, preferences)  
-**Implementation:** Done before any migrations (critical)
-
-### 2. JWT Authentication
-**Why:** Stateless, scalable, suitable for mobile and SPAs  
-**Benefit:** No session storage needed, horizontal scaling possible
-
-### 3. Signal-Driven Reference Generation
-**Why:** Automatic, consistent, reduces manual code  
-**Implementation:** Django signal handler on model pre_save
-
-### 4. DECIMAL Field for Amounts
-**Why:** Avoids floating-point precision errors  
-**Benefit:** Accurate financial calculations
-
-### 5. Cascading Deletes
-**Why:** Ensures data integrity and GDPR compliance  
-**Benefit:** Deleting user removes all their associated data
-
-### 6. Role-Based Permissions
-**Why:** Fine-grained access control  
-**Benefit:** Extensible for future roles
-
-### 7. Pagination on History
-**Why:** Scales to thousands of donations per user  
-**Benefit:** Limited database queries and response size
-
----
-
-## Testing Strategy
-
-### Test Coverage Goals
-- **Overall:** 80% minimum code coverage
-- **Models:** 100% coverage
-- **Views:** 85% coverage
-- **Serializers:** 90% coverage
-
-### Test Types
-✅ Unit Tests (model validation, utilities)  
-✅ Integration Tests (API endpoints, database)  
-✅ Permission Tests (access control)  
-✅ Edge Case Tests (concurrent operations, boundary conditions)
-
-### Running Tests
-```bash
-pytest                                 # Run all tests
-pytest tests/test_auth.py             # Run specific file
-pytest --cov=. --cov-report=html      # Coverage report
-pytest -v                             # Verbose output
-```
-
----
-
-## API Documentation
-
-### Interactive Documentation
-After deployment, access:
-- **Swagger UI:** `http://localhost:8000/api/schema/swagger-ui/`
-- **ReDoc:** `http://localhost:8000/api/schema/redoc/`
-- **OpenAPI Schema:** `http://localhost:8000/api/schema/`
-
-### Features
-- Try endpoints directly from browser
-- See request/response schemas
-- Understand required parameters
-- Test with real tokens
-
----
-
-## Deployment
-
-### Production Checklist
-✅ Environment variables configured  
-✅ Database migrations applied  
-✅ Static files collected  
-✅ Secret key generated  
-✅ CORS origins configured  
-✅ HTTPS certificates installed  
-✅ Backup system active  
-✅ Monitoring configured  
-
-### Supported Environments
-- **Development:** SQLite, DEBUG=True, localhost
-- **Production:** PostgreSQL, DEBUG=False, example.com
-- **Testing:** Separate test database, fast mode
-
-### Deployment Platforms
-- Heroku (with Procfile)
-- AWS (EC2, RDS, S3)
-- DigitalOcean (App Platform or Droplets)
-- Linode
-- Self-hosted Linux servers
-
-**For detailed deployment guide:** See SECURITY_DEPLOYMENT.md
-
----
-
-## Monitoring & Support
-
-### Monitoring Points
-- API response times (target < 200ms)
-- Error rates (target < 1%)
-- Database query performance
-- Server CPU/Memory usage
-- Disk space
-
-### Logging
-- Application logs (Django)
-- Access logs (Nginx)
-- Database logs (PostgreSQL)
-- Security events
-
-### Support Channels
-- GitHub Issues for bug reports
-- Email for security vulnerabilities
-- Team Slack for questions
-
----
-
-## Future Enhancements (v2+)
-
-- Email verification for registration
-- Password reset functionality
-- Donation receipts (PDF generation)
-- Monthly funding goals & progress
-- Impact tracking (where funds are used)
-- Notification system (donation confirmations)
-- Two-factor authentication
-- Donor profiles & preferences
-- Advanced analytics & reporting
-- Mobile app (iOS/Android)
-- SMS notifications
-
----
-
-## Compliance & Standards
-
-### Code Standards
-- PEP 8 (Python style guide)
-- DRF conventions for API design
-- Django best practices
-- Clean code principles
-
-### Security Standards
-- OWASP top 10 prevention
-- GDPR compliance (data protection)
-- PCI DSS (if accepting payments)
-- SOC 2 readiness
-
-### API Standards
-- RESTful design principles
-- Semantic versioning
-- OpenAPI 3.0 specification
-- JSON request/response format
-
----
-
-## Performance Targets
-
-| Metric | Target | Note |
-|--------|--------|------|
-| API Response Time | < 200ms | 95th percentile |
-| Database Query Time | < 100ms | Indexed queries |
-| Error Rate | < 1% | 500 errors |
-| Uptime | 99.9% | 4-5 hours downtime/year |
-| Concurrent Users | 1000+ | Horizontally scalable |
-| Requests/Second | 100+ | With 4 app servers |
-
----
-
-## Contact & Questions
-
-### Design Documentation
-Start with **DESIGN_SUMMARY.md** for an overview, then refer to specific documents:
-- Architecture: **PROJECT_STRUCTURE.md**
-- Endpoints: **API_QUICK_REFERENCE.md** or **DESIGN_DOCUMENTATION.md**
-- Testing: **TESTING_STRATEGY.md**
-- Deployment: **SECURITY_DEPLOYMENT.md**
-
-### Implementation Status
-📍 **Current Phase:** Design Complete  
-✅ **Design Phase:** Finished (Feb 7, 2026)  
-⏳ **Next Phase:** Implementation (pending approval)
-
----
-
-## License & Contribution
-
-### Open Source
-This project is open source and can be modified/extended.
-
-### Contributing
-1. Create a feature branch
-2. Make changes
-3. Write tests
-4. Submit pull request
-5. Code review before merge
-
----
-
-**Project Status:** 🎯 Ready for Implementation  
-**Last Updated:** February 7, 2026  
-**Design Approval:** [Awaiting]
-
----
-
-## Quick Links to Design Documents
-
-1. [📋 DESIGN_DOCUMENTATION.md](DESIGN_DOCUMENTATION.md) – Complete specification
-2. [🔗 API_QUICK_REFERENCE.md](API_QUICK_REFERENCE.md) – Quick API lookup
-3. [📁 PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) – Directory layout
-4. [🧪 TESTING_STRATEGY.md](TESTING_STRATEGY.md) – Test planning
-5. [🔒 SECURITY_DEPLOYMENT.md](SECURITY_DEPLOYMENT.md) – Security & deployment
-6. [📊 DESIGN_SUMMARY.md](DESIGN_SUMMARY.md) – Overview & index
-
----
-
-**All design documents are complete and ready for implementation review.**
