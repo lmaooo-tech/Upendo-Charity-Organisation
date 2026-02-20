@@ -24,7 +24,7 @@ class DonationAdmin(admin.ModelAdmin):
     
     list_filter = [
         'timestamp',
-        ('amount', admin.NumericRangeFilter),
+        'amount',
     ]
     
     search_fields = [
