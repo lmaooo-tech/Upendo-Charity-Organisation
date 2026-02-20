@@ -132,3 +132,15 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.JSONParser',
     ],
 }
+# Caching Configuration
+# Uses in-memory cache for development; switch to Redis for production
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'upendo-cache',
+        'TIMEOUT': 300,  # Default 5 minutes
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000
+        }
+    }
+}

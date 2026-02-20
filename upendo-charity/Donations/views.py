@@ -2,6 +2,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import Sum, Count, Avg, Q
+from django.views.decorators.cache import cache_page
+from django.core.cache import cache
 from decimal import Decimal
 
 from .models import Donation
@@ -26,16 +28,22 @@ def donate(request):
         "donor_email": "john@example.com" (optional),
         "message": "Supporting education" (optional)
     }
+    
+    On success, clears the stats cache to reflect the new donation
+    in the next stats request.
     """
     serializer = DonationSerializer(data=request.data)
     
     if serializer.is_valid():
         serializer.save()
+        # Invalidate stats cache when new donation is added
+        cache.delete('donation_stats')
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@cache_page(60 * 5)  # Cache for 5 minutes (300 seconds)
 @api_view(['GET'])
 def stats(request):
     """
@@ -45,6 +53,10 @@ def stats(request):
     
     Returns public fundraising statistics aggregated from all donations.
     No authentication required.
+    
+    **Caching**: Results are cached for 5 minutes. Cache is invalidated
+    when a new donation is created, so you'll see updated stats immediately
+    after a donation. Subsequent requests within 5 minutes return cached data.
     
     Response:
     {
